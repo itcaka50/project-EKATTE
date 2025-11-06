@@ -39,3 +39,27 @@ function zadChess()
 
 
 //Chapter 3: Functions
+
+//vars are global
+//let, const are locals
+/*function syntax
+    const <name> = function(<args1>...<argsN) {
+        <code>
+    };*/
+
+/*regular notation
+    function <name>(<args>){
+        <code>
+    }*/
+/*arrow notation
+    const <name> = (<args>) => {
+            <code>
+        }
+    
+for one arg:
+    const <name> = <arg> => <code>; */
+
+//functions can pass any number of arguments, even if we doesn't set them
+
+//
+
