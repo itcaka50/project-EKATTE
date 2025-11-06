@@ -61,5 +61,51 @@ for one arg:
 
 //functions can pass any number of arguments, even if we doesn't set them
 
-//
+//Chapter 4: Data structures
 
+//array
+let list = [1, 2, 3, 4];
+//push,pop
+//includes
+//shift, unshift(dobavq)
+//slice
+//object
+//concat
+
+let Jacques = {
+    squirrel: false,
+    events: ["sleep", "sleep"]
+};
+
+delete Jacques.squirrel;
+
+//correlation
+function phi(table) {
+  return (table[3] * table[0] - table[2] * table[1]) /
+    Math.sqrt((table[2] + table[3]) *
+              (table[0] + table[1]) *
+              (table[1] + table[3]) *
+              (table[0] + table[2]));
+}
+//probabilities
+
+
+//for (let entry of array) - foreach
+
+//strings
+//trim
+//padStart(<how much>, <with what>)
+//split, join
+//repeat(<times>)
+
+//function f(...n) any number of arguments, acts as an array of arguments
+//works in arrays if you add [a, b, c, ...<arrayname>]
+
+//JSON- jsobjnotation
+/*
+{
+    <"name"> : <value>,
+}
+*/
+
+//JSON.stringify,JSON.parse
