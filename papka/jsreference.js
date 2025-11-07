@@ -109,3 +109,23 @@ function phi(table) {
 */
 
 //JSON.stringify,JSON.parse
+
+//Chapter 5: Higher-order functions
+
+//we put functions in arguments to abstract them
+
+//filter, map, reduce
+
+//Chapter 6: The Secret Life Of Objects
+
+
+//prototypes
+
+//classes
+//private properties use #
+
+//class Map for maps
+//Symbol
+
+//inheritance - extends super/sub class
+//instanceof
