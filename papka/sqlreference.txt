@@ -1,0 +1,312 @@
+1. Retrieving Data
+	1.1. SQL Basics
+
+    Queries:
+    
+    Data Manipulation
+    SELECT Retrieves data from the database
+    INSERT Adds new rows of data to the database
+    UPDATE Modifies existing database data
+    MERGE Conditionally inserts/updates/deletes new and existing rows
+    DELETE Removes rows of data from the database
+    
+    Data Definition
+    CREATE TABLE Adds a new table to the database
+    DROP TABLE Removes a table from the database
+    ALTER TABLE Changes the structure of an existing table
+    CREATE VIEW Adds a new view to the database
+    DROP VIEW Removes a view from the database
+    CREATE INDEX Builds an index for a column
+    DROP INDEX Removes the index for a column
+    CREATE SCHEMA Adds a new schema to the database
+    DROP SCHEMA Removes a schema from the database
+    CREATE DOMAIN Adds a new data value domain
+    ALTER DOMAIN Changes a domain definition
+    DROP DOMAIN Removes a domain from the database
+    
+    Access Control
+    GRANT Grants user access privileges
+    REVOKE Removes user access privileges
+    CREATE ROLE Adds a new role to the database
+    GRANT ROLE Grants role containing user access privileges
+    DROP ROLE Removes a role from the database
+    
+    Transaction Control
+    COMMIT Ends the current transaction
+    ROLLBACK Aborts the current transaction
+    SET TRANSACTION Defines data access characteristics of the current transaction
+    START TRANSACTION Explicitly starts a new transaction
+    SAVEPOINT Establishes a recovery point for a transaction
+
+    Programmatic SQL
+    DECLARE Defines a cursor for a query
+    EXPLAIN Describes the data access plan for a query
+    OPEN Opens a cursor to retrieve query results
+    FETCH Retrieves a row of query results
+    CLOSE Closes a cursor
+    PREPARE Prepares a SQL statement for dynamic execution
+    EXECUTE Executes a SQL statement dynamically
+    DESCRIBE Describes a prepared query
+
+    Types
+
+    CHAR - FIXED
+    VARCHAR - VARLENGTH
+    CLOB - LARGE FIXED CHAR
+    NATIONAL CHAR - ?
+    NATIONAL CHAR VARYING - ?
+    NCLOB - NATIONAL CLOB
+    BIT
+    INT - INTEGER
+    DEC - DECIMAL
+    FLOAT
+    REAL
+    DOUBLE PRECISION
+    DATE 
+    TIME
+    XML
+
+    Format Name | Date Format | Date Example | Time Format | Time Example
+    American      mm/dd/yyyy    5/19/2008      hh:mm am/pm   2:18 PM
+    European      dd.mm.yyyy    19.5.2008      hh.mm.ss      14.18.08
+    Japanese      yyyy-mm-dd    2008-5-19      hh:mm:ss      14:18:08
+    ISO           yyyy-mm-dd    2008-5-19      hh.mm.ss      14.18.08
+
+
+	1.2. Simple queries
+
+    SELECT <ITEM> FROM <TABLE> WHERE <CONDITION> GROUP BY <CONDITION>
+    HAVING <CONDITION> ORDER BY <CONDITION>
+
+    WHERE != HAVING
+    HAVING IS USED WITH GROUP BY TO FILTER CERTAIN GROUPS
+
+    DISTINCT - REMOVES DUBLICATE ROWS
+
+    BETWEEN - USED WITH WHERE (RANGE TEST); BETWEEN <A> AND <B>
+
+    LIKE - LIKE <"SMTH"%> (PATTERN MATCHING TEST); LIKE <"SM_H"> MATCHES ALL THAT FIT IN THE '_'
+    ESCAPE - USED IN PATTERN MATCHING TO EXCLUDE A WILDCARD CHAR ESCAPE <'CHAR'>
+    IS NULL - (NULL VALUE TEST)
+
+    UNION - COMBINES 2 SELECT QUERIES; UNION ALL INCLUDE DUBLICATES
+
+
+
+	1.3. Multitable Queries
+
+    SELECT <ARGS> FROM <TABLE> JOIN <TABLE> ON <COLUMNS FROM TABLES>
+
+    YOU CAN MATCH AS MANY COLUMNS AS YOU WANT
+
+    NATURAL JOIN - FINDS MATCHING COLUMN NAMES IN TABLES AND JOINS BASED ON THEM
+
+    OUTER JOIN - IF ROW DOESNT MATCH THE COND IT CREATES A SEPARATE ROW IN THE QUERY FOR IT AND DESCRIBES IT SOMEWAY
+
+    LEFT, RIGHT OUTER JOINS 
+
+	1.4. Summary Queries
+
+    COLUMN FUNCTIONS
+
+    SUM, AVG, MIN, MAX, COUNT
+
+	1.5. Subqueries and Query expressions
+
+    A SELECT STATEMENT INSIDE THE BODY OF ANOTHER SELECT STATEMENT
+    
+    ANY TEST - WHERE X < ANY (SELECT Y …) 
+    "where, for some Y, X is less than Y"
+
+    ALL TEST - WHERE XX < ALL (SELECT Y ...)
+    "where, for all Y, X is less than Y"
+
+
+2. Updating data
+	1.1. Database updates
+
+    --INSERT--
+
+    SINGLEROW INSERT
+
+    INSERT INTO <TABLE> (<COLUMN NAMES>) 
+    VALUES (<CONSTANTS>)
+
+    MULTIROW INSERT
+
+    INSERT INTO <TABLE> (<COLUMN NAMES>)
+    <SELECT STATEMENT>
+
+    --DELETE--
+
+    DELETE FROM <TABLE> WHERE <COND>
+
+    IF NO WHERE STATEMENT, DELETE DELETES ALL FROM TABLE
+
+    YOU CAN DELETE WITH A SUBQUERY FROM ANOTHER TABLE BUT CANNOT JOIN TABLES IN THE DELETE QUERY
+
+    --UPDATE--
+
+    UPDATE <TABLE> SET <COLUMN = CONST, ...> WHERE <COND>
+
+    NO WHERE = UPDATE ALL ROWS
+
+    YOU CAN UPDATE WITH SUBQUERIES 
+
+	1.2. Data Integrity 
+
+    REQUIRED DATA 
+
+    NOT NULL CONSTRAINT
+
+    SIMPLE VALIDITY CHECKING
+
+    CREATE RULE <NAME>
+    AS @VALUE <COND>
+
+    COLUMN CHECK CONSTRAINT
+
+    <NAME> <TYPE> CHECK (<COND>)
+    E.G. ID INT NOT NULL CHECK (ID BETWEEN 101 AND 199)
+
+    IF CHECK FAILS, INSERT OR UPDATE FAILS
+
+    DOMAINS 
+
+    CREATE DOMAN <NAME> <TYPE>
+        CHECK ();
+
+    E.G. CREATE TABLE <NAME> (
+        ID <DOMAIN NAME>)
+
+
+    ENTITY INTEGRITY
+
+    RESTRICT DELETE RULE - CANT DELETE PARENT THAT HAS CHILDERN ROWS
+
+    CASCADE DELETE RULE - DELETES CHILDREN WHEN PARENT IS DELETED
+
+    SET NULL - SETS CHILDREN KEYS TO NULLS WHEN PARENT IS DELETED 
+
+    SET DEFAULT - LIKE SET NULL BUT SETS TO DEFAULT VALUE
+
+    MATCH FULL - FOREIGN KEYS MUST MATCH PRIMARY'S CANT BE NULL
+
+    MATCH PARTIAL - ALLOWS PARTIAL NULLS, BUT THEY STILL HAVE TO MATCH
+
+    ASSERTIONS 
+
+    CREATE ASSERTION CHECK ();
+
+    CONSTRAINT TYPES
+
+    NOT NULL
+    PRIMARY KEY 
+    UNIQUE
+    FOREIGN KEY
+    CHECK
+
+    !!!TRIGGER
+
+    WHEN AN SPECIFIED EVENT HAPPENS DO SOMETHING (INSERT, DELETE, UPDATE)
+
+    E.G.
+
+    CREATE TRIGGER NEWORDER
+    ON ORDERS
+    FOR INSERT
+    AS UPDATE SALESREPS
+    SET SALES = SALES + INSERTED.AMOUNT
+    FROM SALESREPS, INSERTED
+    WHERE SALESREPS.EMPL_NUM = INSERTED.REP
+    UPDATE PRODUCTS
+    SET QTY_ON_HAND = QTY_ON_HAND - INSERTED.QTY
+    FROM PRODUCTS, INSERTED
+    WHERE PRODUCTS.MFR_ID = INSERTED.MFR
+    AND PRODUCTS.PRODUCT_ID = INSERTED.PRODUCT
+
+
+	1.3. Transaction Processing
+
+    ACID MODEL
+    
+    ATOMIC - EITHER ALL OPERATIONS ARE PERFORMED OR NONE
+    CONSISTENT - FROM ONE CONSISTENT STATE TO ANOTHER, USER CANT SEE INBETWEEN
+    ISOLATED - TRANSACTIONS CANNOT INTERFERE WITH EACH OTHER
+    DURABLE - ALL CHANGES SHOULD BE PRESERVED
+
+    START TRANSACTION
+    -ISOLATION LEVEL: READ UNCOMITTED, READ COMMITED, REPEATABLE READ, SERIALIZABLE
+    -ACCESS LEVEL: READ/WRITE ONLY
+    -DIAGNOSTICS SIZE: NUMBERS OF CONDITIONS //NOT IN MYSQL
+
+    E.G.START TRANSACTION
+        ISOLATION LEVEL READ UNCOMMITTED,
+        READ ONLY,
+        DIAGNOSTICS SIZE 5
+
+    SET TRANSACTION - SAME
+    SET CONSTRAINTS
+    SAVEPOINT - SAVEPOINT <NAME> ; CAN ROLLBACK TO THERE IF NEEDED
+    RELEASE SAVEPOINT
+    COMMIT
+    ROLLBACK
+
+
+    LOCKING TECHNIQUES?
+
+
+3. Database Structure
+	1.1. Creating Databаse
+
+    CREATE 
+
+    CREATE DATABASE <NAME>
+
+    CREATE TABLE <NAME>(
+        <COLNAME> <TYPEORDOMAIN> <REQUIRED DATA> <DEFAULT VALUE>,
+        .
+        .
+        . 
+    ); //LINE 176 FOR DOMAIN Definition
+
+    E.G. OF COLUMN STRUCTURE: REGION VARCHAR(10) NOT NULL DEFAULT 'Eastern',
+
+    CONSTRAINTS 
+
+    PRIMARY AND FOREIGN KEY
+
+    CONSTRAINT <NAME> FOREIGN KEY (<PK>) REFERENCES <TABLE> <RULES>
+    
+    
+    DROP
+    
+    DROP TABLE <NAME>;
+
+    ALTER 
+
+    ALTER TABLE <table-name>
+    ADD <column-definition>
+    | ALTER <column-name> SET DEFAULT <value>
+    | ALTER <column-name> DROP DEFAULT
+    | DROP <column-name> [CASCADE | RESTRICT]
+    | ADD (
+        <primary-key-definition>
+      | <foreign-key-definition>
+      | <uniqueness-constraint>
+      | <check-constraint>
+    )
+    | DROP CONSTRAINT <constraint-name> [CASCADE | RESTRICT];
+
+
+    ALIAS
+
+    CREATE ALIAS <NAME>
+        FOR <TABLE.COLUMN>
+
+	1.2. View
+	1.3. SQL Security (включва permissions, grant, revoke)
+4. Dynamic SQL
+	1.1. CURSORS
+	1.2. Prepare and Execute statements (изпълняване на sql през скриптов език, perl или python)
+5. SQL and JSON (няма го в книгата)
