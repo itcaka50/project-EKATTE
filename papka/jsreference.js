@@ -129,3 +129,111 @@ function phi(table) {
 
 //inheritance - extends super/sub class
 //instanceof
+
+
+//Chapter 8: Bugs and errors
+
+"use strict";
+
+function test(label, body){
+    if (!body()) console.log('Failed: ${label}');
+}
+
+test("convert Latin to uppercase", () => {
+    return "hello".toUpperCase() == "HELLO";
+});
+
+if (true == false)
+    throw new Error("Mistake");
+
+//Chapter 9: REGEX
+
+
+let reg1 = new RegExp("abc");
+let reg2 = /abc/;
+
+//some characters are special in regex and if used as symbols must be placed with a '\'
+
+//brackets for matching any values:
+
+/[0123456789]/;
+/[0-9]/;
+
+/*
+\d	Any digit character
+\w	An alphanumeric character (“word character”)
+\s	Any whitespace character (space, tab, newline, and similar)
+\D	A character that is not a digit
+\W	A nonalphanumeric character
+\S	A nonwhitespace character
+\u unicode
+.	Any character except for newline */
+
+let dateTime = /\d\d-\d\d-\d\d\d\d \d\d:\d\d/;
+
+//if you want to match any char except some, use: '^'
+
+let avoid = /[^01]/;
+
+// \p is used to match all chars from the unicode standart
+
+/*
+\p{L}	Any letter
+\p{N}	Any numeric character
+\p{P}	Any punctuation character
+\P{L}	Any nonletter (uppercase P inverts)
+\p{Script=Hangul}	Any character from the given script
+*/
+
+//+ indicates that the element may be repeated more than once
+//* allows the pattern to match 0 times
+//? makes the prev part of the pattern optional
+//{} brackets are used when a pattern must occur a precise number of times
+//| denotes a choice (a|b|c|d)
+
+//.search(regex) -> indexof regex
+//replace -> works with regex on strings
+
+//Chapter 10: Modules
+
+//import, export
+
+//export in front a func to make in importable by other modules
+
+//import {<names>} from <filepath>;
+
+//import * as <smth> from <file>
+
+//Chapter 11: ASynchronous Programming
+
+//Class Promise, then func
+
+let fifteen = Promise.resolve(15);
+fifteen.then(value => console.log(`Got ${value}`));
+
+function textFile(filename) {
+  return new Promise(resolve => {
+    readTextFile(filename, text => resolve(text));
+  });
+}
+
+textFile("plans.txt").then(console.log);
+
+function randomFile(listFile) {
+  return textFile(listFile)
+    .then(content => content.trim().split("\n"))
+    .then(ls => ls[Math.floor(Math.random() * ls.length)])
+    .then(filename => textFile(filename));
+}
+
+/*
+someAsyncFunction((error, value) => {
+  if (error) handleError(error);
+  else processValue(value);
+});*/ //error handling
+
+//async, await
+
+//generator functions, yield keyword: function*
+
+//promise.all - for array of promises
