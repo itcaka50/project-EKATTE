@@ -24,12 +24,12 @@ CREATE TABLE IF NOT EXISTS town_halls (
 
 CREATE INDEX IF NOT EXISTS town_halls_name_trgm_idx on town_halls USING gin (name gin_trgm_ops);
 
-CREATE TABLE IF NOT EXISTS territorial-units (
+CREATE TABLE IF NOT EXISTS territorial_units (
     ekatte TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     type TEXT,
     town_hall_code TEXT REFERENCES town_halls(code) ON UPDATE CASCADE ON DELETE RESTRICT,
-    municipality_code TEXT NOT NULL REFERENCES municipalities(code) ON UPDATE CASCDADE ON DELETE RESTRICT
+    municipality_code TEXT NOT NULL REFERENCES municipalities(code) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS territorial-units_name_trgm_idx ON territorial-units USING gin (name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS territorial_units_name_trgm_idx ON territorial_units USING gin (name gin_trgm_ops);
