@@ -237,3 +237,23 @@ someAsyncFunction((error, value) => {
 //generator functions, yield keyword: function*
 
 //promise.all - for array of promises
+
+
+//Chapter 13 : Javascript and the Browser
+
+//HTTP
+//GET /index.html HTTP/1.1
+//method file ver
+
+//URL - uniform resource locator
+//<protocol>/<server>/<path>
+//http://eloquentjavascript.net/13_browser.html
+
+
+//Chapter 14: The Document Object Model
+
+//DOM 
+
+//Three stucture
+//firstChild, lastChild, previousSibling, nextSibling, parentNode
+//document.createElement(), getElementById.....

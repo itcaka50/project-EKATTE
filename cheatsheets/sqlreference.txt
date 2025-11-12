@@ -304,7 +304,17 @@
     CREATE ALIAS <NAME>
         FOR <TABLE.COLUMN>
 
-	1.2. View
+	1.2. Views
+
+    A view is a virtual table in the database whose contents are defined by a query.
+    It is used to provide a level of access for different users
+
+    CREATE VIEW <NAME> (<COLUMN NAMES>) AS 
+        <QUERY>
+
+    DROP VIEW <NAME> <CASCADE>
+
+
 	1.3. SQL Security (включва permissions, grant, revoke)
 4. Dynamic SQL
 	1.1. CURSORS
