@@ -316,6 +316,11 @@
 
 
 	1.3. SQL Security (включва permissions, grant, revoke)
+
+    GRANT <TYPE PRIVELEGE> <COLUMN> ON <OBJTYPE> <OBJNAME> TO <USER>
+
+    PRIVELEGE, REVOKE PRIVELEGE
+    
 4. Dynamic SQL
 	1.1. CURSORS
 	1.2. Prepare and Execute statements (изпълняване на sql през скриптов език, perl или python)
