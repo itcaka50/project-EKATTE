@@ -257,3 +257,100 @@ someAsyncFunction((error, value) => {
 //Three stucture
 //firstChild, lastChild, previousSibling, nextSibling, parentNode
 //document.createElement(), getElementById.....
+
+//Chapter 15: Handling events
+
+window.addEventListener("click", () => {
+    console.log("clicked");
+})
+
+
+let button = document.querySelector("button");
+
+button.addEventListener("click", () => {
+    console.log("clicked");
+})
+
+//preventDefaul();
+//"keydown"
+//"mousedown"
+//setTimeout()
+
+//Chapter 17: Drawing on canvas
+
+//<canvas> tag
+
+//let context = canvas.getContext("2d");
+//fillRect - gets upperleft coords, width and height; 300x150 default size
+//strokeRect - only bordered rect
+//fillStyle - css for the figure
+//strokeStyle - controls the lines
+
+//paths
+let cx = document.querySelector("canvas").getContext("2d");
+cx.beginPath();
+  for (let y = 10; y < 100; y += 10) {
+    cx.moveTo(10, y);
+    cx.lineTo(90, y);
+  }
+  cx.stroke();
+
+//fillText();
+//drawImage();
+
+//Chapter 18: HTTP and Forms
+/*
+GET /18_http.html HTTP/1.1
+Host: eloquentjavascript.net
+User-Agent: Your browser's name
+
+HTTP/1.1 200 OK
+Content-Length: 87320
+Content-Type: text/html
+Last-Modified: Fri, 13 Oct 2023 10:05:41 GMT
+
+<!doctype html>
+... the rest of the document */
+
+//Client sends request, types:
+//GET, DELETE, POST, PUT
+//<REQUEST> <TARGET> <PROTOCOL>
+//GET a.html HTTP /1.1
+
+//Server response:
+
+//<PROTOCOL> <STATUS CODE> <HUMAN STRING>
+//<HEADERS>
+
+//Forms:
+//<form method="GET" action="example/message.html">
+/*  <p>Name: <input type="text" name="name"></p>
+  <p>Message:<br><textarea name="message"></textarea></p>
+  <p><button type="submit">Send</button></p>
+</form>*/
+
+//Fetch:
+//browser js can make http requests
+//fetch(example/data.txt);
+
+//fetch("example/data.txt").then(resp => resp.text()).then(text => console.log(text));
+
+/*
+<p><input type="text" value="abc"> (text)</p>
+<p><input type="password" value="abc"> (password)</p>
+<p><input type="checkbox" checked> (checkbox)</p>
+<p><input type="color" value="orange"> (color)</p>
+<p><input type="date" value="2023-10-13"> (date)</p>
+<p><input type="radio" value="A" name="choice">
+   <input type="radio" value="B" name="choice" checked>
+   <input type="radio" value="C" name="choice"> (radio)</p>
+<p><input type="file"> (file)</p>
+*/
+
+//<label></label> for input fields
+// radio, <select><option1><option2>...</select>, <file multiple>
+
+//localStorage object
+//localStorage.setItem("key", "value");
+//localStorage.getItem("key");
+//.removeItem
