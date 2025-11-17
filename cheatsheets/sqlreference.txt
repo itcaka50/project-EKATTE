@@ -323,5 +323,56 @@
     
 4. Dynamic SQL
 	1.1. CURSORS
-	1.2. Prepare and Execute statements (изпълняване на sql през скриптов език, perl или python)
+    DECLARE CURSOR <CURSORNAME> CURSOR FOR <SELECT STATEMENT>
+
+    OPEN <CURSORNAME> USING <HOSTVARIABLE>
+
+    FETCH <CURSORNAME> INTO <HOSTVARIABLE>
+
+    FETCH FIRST,LAST,PRIOR, NEXT, ABSOLUTE(BY ROW NUM), RELATIVE
+
+    CLOSE <CURSORNAME>
+
+    DELETE FROM <CURSORNAME> WHERE CURRENT OF <CURSORNAME>
+
+    UPDATE <TABLE> SET <COLUMN NAME = EXPRESSION> WHERE CURRENT OF <CURSORNAME>
+
+    1.2. Prepare and Execute statements (изпълняване на sql през скриптов език, perl или python)
+
+    PREPARE STATEMENT
+
+    PREPARE <STATEMENTNAME> ATTRIBUTES <ATTRIBUTES VARIABLE> FROM <HOSTNAME>
+
+    EXECUTE <STATEMENTNAME> USING DESCRIPTOR <DESCRIPTORNAME>
+    EXECUTE <STATEMENTNAME> USING <HOSTVARIABLE>
+
 5. SQL and JSON (няма го в книгата)
+
+INSERT INTO Authors (name, age, skills, numOfPosts) VALUES 
+('ICO', 20, 'ALLOFTHEM', 3);
+GROUP
+
+
+ISJSON - GIVEN JSON STRING IS JSON
+
+SELECT ISJSON(@JSONDATA) AS VALIDJSON
+
+DECLATE @JSONDATA NVARCHAR(MAX);
+SET @JSONDATA = '{"ONE" : "1"}'
+
+
+JSON_VALUE - JSON STRING, PATH
+
+SELECT JSON_VALUE(@JSONDATA, SMTH') AS NAME
+    '$' - reference entire JSON object
+    '$.Example1' - reference Example1in JSON object
+    '$[4]' - reference 4th element in JSON array
+    '$.Example1.Example2[2].Example3' - reference nested property in JSON object
+
+JSON_QUERY - EXTRACT AN ARRAY OF DATA FROM JSON
+
+JSON_MODIFY - SAME AS JSON VALUE BUT SWITCHES DATA
+
+FOR JSON AUTO/PATH - CREATES JSON
+
+OPENJSON
