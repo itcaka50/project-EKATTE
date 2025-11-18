@@ -28,8 +28,7 @@ CREATE TABLE IF NOT EXISTS territorial_units (
     ekatte TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     type TEXT,
-    town_hall_code TEXT REFERENCES town_halls(code) ON UPDATE CASCADE ON DELETE RESTRICT,
-    municipality_code TEXT NOT NULL REFERENCES municipalities(code) ON UPDATE CASCADE ON DELETE RESTRICT
+    town_hall_code TEXT REFERENCES town_halls(code) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 CREATE INDEX IF NOT EXISTS territorial_units_name_trgm_idx ON territorial_units USING gin (name gin_trgm_ops);
