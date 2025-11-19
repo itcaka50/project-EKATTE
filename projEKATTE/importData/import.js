@@ -1,33 +1,32 @@
 import fs from 'fs/promises';
 import pool from '../db.js';
 import Ajv from 'ajv';
-import { PropertyMixer } from 'three';
 
-const Ajv = new Ajv();
+const ajv = new Ajv();
 
 const regionSchema = { type: 'object',
     properties : { code : {type : 'string'}, name : {type : 'string'} },
     required : ['code', 'name'] };
-const validateRegion = Ajv.compile(regionSchema);
+const validateRegion = ajv.compile(regionSchema);
 
 const municipalitySchema = { type : 'object',
     properties : { code : {type : 'string'}, name : {type : 'string'}, region_code : {type : 'string'} },
     required : ['code', 'name', 'region_code'] };
-const validateMunicipality = Ajv.compile(municipalitySchema);
+const validateMunicipality = ajv.compile(municipalitySchema);
 
 const townhallSchema = { type : 'object',
     properties : { code : {type : 'string'}, name : {type : 'string'}, municipality_code : {type : 'string'} },
     required : ['code', 'name', 'municipality_code'] };
-const validateTownHall = Ajv.compile(townhallSchema);
+const validateTownHall = ajv.compile(townhallSchema);
 
 const territorialunitsSchema = { type : 'object',
     properties : { ekatte : {type : 'string'}, name : {type : 'string'}, type : {type : 'string'}, town_hall_code : {type : 'string'} },
     required : ['ekatte', 'name', 'town_hall_code'] };
-const validateTerritorialUnit = Ajv.compile(territorialunitsSchema);
+const validateTerritorialUnit = ajv.compile(territorialunitsSchema);
 
 async function fetchData(url) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch ${url}: ${res.status}');
+    const res = await fetch(url + "/json");
+    if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
 
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error('Expected an array from the fetched data');
@@ -40,9 +39,9 @@ async function insertDataBatch(client, table, columns, rows, conflictColumn) {
     const placeholders = rows
     .map((row, rowIndx) => {
         const params = columns
-        .map((col, colIndx) => '$${rowIndx * columns.length + colIndx + 1}')
+        .map((col, colIndx) => `$${rowIndx * columns.length + colIndx + 1}`)
         .join(',');
-        return '(${params})';
+        return `(${params})`;
     })
     .join(',');
 
@@ -76,19 +75,47 @@ async function importFromFile(path) {
         await client.query('BEGIN');
 
         const regionsRaw = await fetchData(urls.regions);
-        const regions = regionsRaw.filter(validateRegion);
+        const slicedRegionsJson = regionsRaw.map((x) => ({
+            code: x.oblast,
+            name: x.name
+        }));
+        const regions = slicedRegionsJson.filter(validateRegion);
+        
         await insertBatches(client, 'regions', ['code', 'name'] , regions, 'code');
    
         const municipalitiesRaw = await fetchData(urls.municipalities);
-        const municipalities = municipalitiesRaw.filter(validateMunicipality);
+        const slicedMunicipalitiesJson = municipalitiesRaw.filter(x => x.obshtina && x.name)
+            .map((x) => ({
+            code: x.obshtina,
+            name: x.name,
+            region_code: x.obshtina.slice(0, 3)
+        }));
+        const municipalities = slicedMunicipalitiesJson.filter(validateMunicipality);
+        
         await insertBatches(client, 'municipalities', ['code', 'name', 'region_code'] , municipalities, 'code');
 
         const townHallsRaw = await fetchData(urls.town_halls);
-        const townHalls = townHallsRaw.filter(validateTownHall);
+        const slicedTownHallsJson = townHallsRaw.filter(x => x.kmetstvo && x.name)
+            .map((x) => ({
+            code: x.kmetstvo,
+            name: x.name,
+            municipality_code: x.kmetstvo.slice(0, 5)
+        }));
+        const townHalls = slicedTownHallsJson.filter(validateTownHall);
+        
         await insertBatches(client, 'town_halls', ['code', 'name', 'municipality_code'] , townHalls, 'code');
 
         const territorialUnitsRaw = await fetchData(urls.territorial_units);
-        const territorialUnits = territorialUnitsRaw.filter(validateTerritorialUnit);
+        let slicedTerritorialUnitsJson = territorialUnitsRaw.filter(x => x.ekatte && x.name && x.kmetstvo)
+            .map((x) => ({
+            ekatte: x.ekatte,
+            name: x.name,
+            type: x.kind?.toString() || null,
+            town_hall_code: x.kmetstvo
+        }));
+        let territorialUnits = slicedTerritorialUnitsJson.filter(validateTerritorialUnit);
+        territorialUnits = territorialUnits.filter(x => !(x.town_hall_code && x.town_hall_code.endsWith('-00')));
+        
         await insertBatches(client, 'territorial_units', ['ekatte', 'name', 'type', 'town_hall_code'] , territorialUnits, 'ekatte');
 
         await client.query('COMMIT');
@@ -101,7 +128,7 @@ async function importFromFile(path) {
     finally {
         client.release();
     }
-
-    const filePath = './urls.json';
-    importFromFile(filePath);
 }
+
+const filePath = './urls.json';
+importFromFile(filePath);
