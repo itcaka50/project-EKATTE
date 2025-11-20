@@ -1,9 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="bg">
 <head>
+    <meta charset="UTF-8">
+    <title>Търсене в ЕКАТТЕ</title>
 
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <p>hi</p>
+
+<div class="container">
+
+    <h1>Търсене на селища</h1>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Въведи дума за търсене...">
+        <button id="searchBtn">Търси</button>
+    </div>
+
+    <div class="stats">
+        <div>Селища: <span id="countTU">0</span></div>
+        <div>Кметства: <span id="countTH">0</span></div>
+        <div>Общини: <span id="countM">0</span></div>
+        <div>Области: <span id="countR">0</span></div>
+    </div>
+
+    <h2>Резултати (<span id="resultsCount">0</span>)</h2>
+
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>ЕКАТТЕ</th>
+                <th>Име</th>
+                <th>Кметство</th>
+                <th>Община</th>
+                <th>Област</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div id="pagination" class="pagination"></div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

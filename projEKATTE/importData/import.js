@@ -65,6 +65,15 @@ async function insertBatches(client, table, columns, rows, conflictColumn, batch
     }
 }
 
+function removeDuplicates(rows, conflictColumn) {
+    const seen = new Set();
+    return rows.filter(row => {
+        if (seen.has(row[conflictColumn])) return false;
+        seen.add(row[conflictColumn]);
+        return true;
+    });
+}
+
 async function importFromFile(path) {
     const client = await pool.connect();
 
@@ -101,10 +110,8 @@ async function importFromFile(path) {
             name: x.name,
             municipality_code: x.kmetstvo.slice(0, 5)
         }));
-        const townHalls = slicedTownHallsJson.filter(validateTownHall);
+        let townHalls = slicedTownHallsJson.filter(validateTownHall);
         
-        await insertBatches(client, 'town_halls', ['code', 'name', 'municipality_code'] , townHalls, 'code');
-
         const territorialUnitsRaw = await fetchData(urls.territorial_units);
         let slicedTerritorialUnitsJson = territorialUnitsRaw.filter(x => x.ekatte && x.name && x.kmetstvo)
             .map((x) => ({
@@ -114,8 +121,28 @@ async function importFromFile(path) {
             town_hall_code: x.kmetstvo
         }));
         let territorialUnits = slicedTerritorialUnitsJson.filter(validateTerritorialUnit);
-        territorialUnits = territorialUnits.filter(x => !(x.town_hall_code && x.town_hall_code.endsWith('-00')));
         
+        const missingTownHalls = territorialUnits
+        .filter(tu => !townHalls.some(th => th.code === tu.town_hall_code))
+        .map(tu => {
+            const municipalityCode = tu.town_hall_code.slice(0, 5);
+            const municipality = municipalities.find(m => m.code === municipalityCode);
+
+            return {
+                code: tu.town_hall_code,
+                name: municipality?.name || tu.name,
+                municipality_code: municipalityCode
+            };
+        });
+
+        if (missingTownHalls.length > 0) {
+            townHalls = [...townHalls, ...missingTownHalls];
+        }
+
+        townHalls = removeDuplicates(townHalls, 'code');
+        territorialUnits = removeDuplicates(territorialUnits, 'ekatte');
+
+        await insertBatches(client, 'town_halls', ['code', 'name', 'municipality_code'] , townHalls, 'code');
         await insertBatches(client, 'territorial_units', ['ekatte', 'name', 'type', 'town_hall_code'] , territorialUnits, 'ekatte');
 
         await client.query('COMMIT');
@@ -132,3 +159,4 @@ async function importFromFile(path) {
 
 const filePath = './urls.json';
 importFromFile(filePath);
+return;
