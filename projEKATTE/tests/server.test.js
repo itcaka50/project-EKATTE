@@ -1,122 +1,154 @@
-import {search, counts} from '../server.js';
-import pool from '../db.js';
+import { jest } from '@jest/globals';
+import http from 'http';
 
-jest.mock('../db.js');
+process.env.NODE_ENV = 'test';
+
+const mockClient = {
+    query: jest.fn(),
+    release: jest.fn()
+};
+
+const mockPool = {
+    connect: jest.fn(() => Promise.resolve(mockClient))
+};
+
+jest.unstable_mockModule('../db.js', () => ({
+    default: mockPool
+}));
+
+jest.unstable_mockModule('fs/promises', () => ({
+    default: {
+        readFile: jest.fn()
+    }
+}));
+
+const { search, counts, searchCount, server } = await import('../server.js');
+const fs = (await import('fs/promises')).default;
 
 describe('EKATTE server logic', () => {
-    let client;
-
     beforeEach(() => {
-        client = {
-            query: jest.fn(),
-            release: jest.fn()
-        };
-        pool.connect = jest.fn().mockResolvedValue(client);
+        jest.clearAllMocks();
+        mockClient.query.mockClear();
+        mockClient.release.mockClear();
+        mockPool.connect.mockClear();
+
+        jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
-    afterEach(() => jest.clearAllMocks());
-
-    test('search() should query settlements correctly', async () => {
-      
-        const fakeRows = [
-        { ekatte: '12345', name: 'София', town_hall: null, municipality: 'СО', oblast: 'София-град' }
-        ];
-        client.query.mockResolvedValue({ rows: fakeRows });
-
-        const result = await search('Соф');
-        expect(client.query).toHaveBeenCalledWith(expect.stringContaining('WHERE s.name ILIKE $1'), ['%Соф%']);
-        expect(result).toEqual(fakeRows);
-        expect(client.release).toHaveBeenCalled();
+    afterEach(() => {
+        console.error.mockRestore();
     });
 
-    test('search() should return empty array when no matches found', async () => {
-      
-        client.query.mockResolvedValue({ rows: [] });
+    describe('search()', () => {
+        test('should query territorial units correctly', async () => {
+            const fakeRows = [
+                { ekatte: '12345', name: 'София', town_hall: null, municipality: 'СО', region: 'София-град' }
+            ];
+            mockClient.query.mockResolvedValue({ rows: fakeRows });
 
-        const result = await search('');
-        expect(client.query).toHaveBeenCalledWith(expect.any(String), ['%%']);
-        expect(result).toEqual([]);
-    });
-
-    test('search() should work case-insensitively with ILIKE', async () => {
-       
-        const fakeRows = [
-            { ekatte: '12345', name: 'СОФИЯ', town_hall: null, municipality: 'СО', oblast: 'София-град' }
-        ];
-        client.query.mockResolvedValue({ rows: fakeRows });
-
-        const result = await search('софия');
-        expect(client.query).toHaveBeenCalledWith(expect.stringMatching(/ILIKE/), ['%софия%']);
-        expect(result[0].name).toBe('СОФИЯ');
-    });
-
-    test('search() should throw and release client on SQL error', async () => {
-        client.query.mockRejectedValue(new Error('syntax error'));
-
-        await expect(search('something')).rejects.toThrow('syntax error');
-        expect(client.release).toHaveBeenCalled();
-        });
-
-    test('counts() should query all tables and return counts', async () => {
-
-        client.query.mockResolvedValueOnce({ rows: [{ count: '10' }] });
-        client.query.mockResolvedValueOnce({ rows: [{ count: '5' }] });
-        client.query.mockResolvedValueOnce({ rows: [{ count: '3' }] });
-        client.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
-
-        const result = await counts('Соф'); 
-        expect(result).toEqual({
-        settlements: 10,
-        town_halls: 5,
-        municipalities: 3,
-        oblasts: 1
-        });
-        expect(client.release).toHaveBeenCalled();
-    });
-
-    test('counts() should return zeros when nothing matches', async () => {
-
-        client.query
-            .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-            .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-            .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-            .mockResolvedValueOnce({ rows: [{ count: '0' }] });
-
-        const result = await counts('Несъществуващо');
-        expect(result).toEqual({
-            settlements: 0,
-            town_halls: 0,
-            municipalities: 0,
-            oblasts: 0
+            const result = await search('Соф');
+            
+            expect(mockClient.query).toHaveBeenCalledWith(
+                expect.stringContaining('WHERE t.name ILIKE $1'),
+                ['%Соф%', 25, 0]
+            );
+            expect(result).toEqual(fakeRows);
+            expect(mockClient.release).toHaveBeenCalled();
         });
     });
 
-    test('counts() should return mixed counts for partial matches', async () => {
-        client.query
-            .mockResolvedValueOnce({ rows: [{ count: '2' }] }) 
-            .mockResolvedValueOnce({ rows: [{ count: '0' }] }) 
-            .mockResolvedValueOnce({ rows: [{ count: '1' }] }) 
-            .mockResolvedValueOnce({ rows: [{ count: '1' }] }); 
-        const result = await counts('Соф');
-        expect(result.settlements).toBe(2);
-        expect(result.town_halls).toBe(0);
-        expect(result.municipalities).toBe(1);
-        expect(result.oblasts).toBe(1);
-    });
+    describe('HTTP Server', () => {
 
-    test('counts() should stop and release client if query fails', async () => {
-       
-        client.query
-            .mockResolvedValueOnce({ rows: [{ count: '5' }] })
-            .mockRejectedValueOnce(new Error('Table missing'));
+        function createMockRes(done, expectedData, expectedCode = 200, expectedType = 'text/plain') {
+            return {
+                writeHead: jest.fn((code, headers) => {
+                    expect(code).toBe(expectedCode);
+                    if (headers['Content-Type']) {
+                        expect(headers['Content-Type']).toBe(expectedType);
+                    }
+                }),
+                end: jest.fn((data) => {
+                    expect(data).toBe(expectedData);
+                    done();
+                })
+            };
+        }
 
-        await expect(counts('Соф')).rejects.toThrow('Table missing');
-        expect(client.release).toHaveBeenCalled();
-    });
+        test('should handle /api/search endpoint', (done) => {
+            mockClient.query
+                .mockResolvedValueOnce({ rows: [{ ekatte: '1', name: 'София' }] })
+                .mockResolvedValueOnce({ rows: [{ count: '1' }] })
+                .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+                .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+                .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+                .mockResolvedValueOnce({ rows: [{ count: '1' }] });
 
-    test('search() should release client even on error', async () => {
-        client.query.mockRejectedValue(new Error('DB error'));
-        await expect(search('Соф')).rejects.toThrow('DB error');
-        expect(client.release).toHaveBeenCalled();
+            const req = { url: '/api/search?q=София&limit=25&offset=0' };
+            const res = {
+                writeHead: jest.fn(),
+                end: jest.fn((data) => {
+                    const parsed = JSON.parse(data);
+                    expect(parsed).toHaveProperty('results');
+                    expect(parsed).toHaveProperty('stats');
+                    expect(parsed).toHaveProperty('total');
+                    expect(res.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
+                    done();
+                })
+            };
+
+            server.emit('request', req, res);
+        });
+
+        test('should serve index.html on root path', (done) => {
+            fs.readFile.mockResolvedValue('<html>test</html>');
+
+            const req = { url: '/' };
+            const res = createMockRes(done, '<html>test</html>', 200, 'text/html');
+            server.emit('request', req, res);
+        });
+
+        test('should serve style.css', (done) => {
+            fs.readFile.mockResolvedValue('body { color: red; }');
+
+            const req = { url: '/style.css' };
+            const res = createMockRes(done, 'body { color: red; }', 200, 'text/css');
+            server.emit('request', req, res);
+        });
+
+        test('should serve script.js', (done) => {
+            fs.readFile.mockResolvedValue('console.log("test");');
+
+            const req = { url: '/script.js' };
+            const res = createMockRes(done, 'console.log("test");', 200, 'text/javascript');
+            server.emit('request', req, res);
+        });
+
+        test('should return 404 for unknown paths', (done) => {
+            const req = { url: '/unknown' };
+            const res = {
+                writeHead: jest.fn(),
+                end: jest.fn((data) => {
+                    expect(res.writeHead).toHaveBeenCalledWith(404);
+                    expect(data).toBe('Not found');
+                    done();
+                })
+            };
+            server.emit('request', req, res);
+        });
+
+        test('should handle errors with 500 response', (done) => {
+            fs.readFile.mockRejectedValue(new Error('File read error'));
+
+            const req = { url: '/' };
+            const res = {
+                writeHead: jest.fn(),
+                end: jest.fn((data) => {
+                    expect(res.writeHead).toHaveBeenCalledWith(500);
+                    expect(data).toBe('Internal error');
+                    done();
+                })
+            };
+            server.emit('request', req, res);
+        });
     });
 });

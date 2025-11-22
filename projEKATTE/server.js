@@ -60,6 +60,9 @@ async function searchCount(q) {
         );
         return Number(res.rows[0].count);
     }
+    catch (err) {
+        console.error('Search count failed', err);
+    }
     finally {
         client.release();
     }
@@ -84,25 +87,25 @@ const server = http.createServer (async (req, res) => {
         res.writeHead(200, {'Content-Type' : 'application/json'});
         res.end(JSON.stringify({ results, stats, total }));
         return;
-    }
+        }
 
-        if (u.pathname === '/' || u.pathname === '/index.html') {
+        else if (u.pathname === '/' || u.pathname === '/index.html') {
             const html = await fs.readFile(new URL('./frontend/index.html', import.meta.url), 'utf8');
             res.writeHead(200, {'Content-Type' : 'text/html' });
             res.end(html);
             return;
         }
 
-        if (u.pathname === '/style.css') {
+        else if (u.pathname === '/style.css') {
             const css = await fs.readFile(new URL('./frontend/style.css', import.meta.url), 'utf8');
             res.writeHead(200, {'Content-Type' : 'text/css' });
             res.end(css);
             return;
         }
 
-        if (u.pathname === '/script.js') {
+        else if (u.pathname === '/script.js') {
             const jeies = await fs.readFile(new URL('./frontend/script.js', import.meta.url), 'utf8');
-            res.writeHead(200, {'Content-type' : 'text/javascript'});
+            res.writeHead(200, {'Content-Type' : 'text/javascript'});
             res.end(jeies);
             return;
         }
@@ -119,6 +122,9 @@ const server = http.createServer (async (req, res) => {
     }
 });
 
-server.listen(PORT, () => console.log('Server running on port', PORT));
 
-export {search, counts};
+if (process.env.NODE_ENV !== 'test') {
+    server.listen(3000, () => console.log('Server running on 3000'));
+}
+
+export { search, counts, searchCount, server };

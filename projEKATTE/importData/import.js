@@ -159,4 +159,15 @@ async function importFromFile(path) {
 
 const filePath = './urls.json';
 importFromFile(filePath);
-return;
+
+export { 
+    fetchData, 
+    insertDataBatch, 
+    insertBatches, 
+    removeDuplicates, 
+    importFromFile,
+    validateRegion,
+    validateMunicipality,
+    validateTownHall,
+    validateTerritorialUnit
+};
