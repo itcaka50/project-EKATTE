@@ -35,6 +35,7 @@ async function loadData() {
 
 function updateStats(cnt) {
     document.getElementById("countTU").textContent = cnt.territorial_units;
+    document.getElementById("all").textContent = cnt.territorial_units;
     document.getElementById("countTH").textContent = cnt.town_halls;
     document.getElementById("countM").textContent = cnt.municipalities;
     document.getElementById("countR").textContent = cnt.regions;

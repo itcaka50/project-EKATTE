@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background: #f0f2f5;
+    background: #e6f4ea; /* светло зелен фон */
     margin: 0;
     padding: 30px;
 }
@@ -9,13 +9,14 @@ body {
     max-width: 900px;
     margin: auto;
     background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 h1 {
     margin-bottom: 20px;
+    color: #2c6f4c; /* тъмно зелено за заглавието */
 }
 
 .search-box {
@@ -26,11 +27,24 @@ h1 {
 .search-box input {
     flex: 1;
     padding: 10px;
+    font-size: 14px;
+    border: 1px solid #a8d5a2;
+    border-radius: 5px;
 }
 
 .search-box button {
     padding: 10px 20px;
     cursor: pointer;
+    font-size: 14px;
+    background: #2c6f4c; /* приятно зелено */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.search-box button:hover {
+    background: #1e4b34; /* по-тъмно зелено при hover */
 }
 
 .stats {
@@ -40,15 +54,39 @@ h1 {
     font-size: 14px;
 }
 
+.stats div span {
+    font-weight: bold;
+    color: #2c6f4c; /* зелен акцент за числата */
+}
+
 table {
     width: 100%;
     margin-top: 20px;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 table th, table td {
     padding: 10px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #cce5d0;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+table th {
+    background: #d9f0df; /* светло зелен header */
+    font-weight: bold;
+    color: #2c6f4c;
+}
+
+table tbody tr:nth-child(even) {
+    background: #f0faf4; /* редуваща се зеленикава линия */
+}
+
+table td {
+    font-size: 14px;
 }
 
 .pagination {
@@ -61,11 +99,22 @@ table th, table td {
 .pagination button {
     padding: 5px 10px;
     border: none;
-    background: #eee;
+    background: #cce5d0;
     cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+
+.pagination button:hover {
+    background: #b0ddb2;
 }
 
 .pagination .active {
-    background: #007bff;
+    background: #2c6f4c;
     color: white;
+}
+
+/* Първа колона (ЕКАТТЕ) по-тясна за по-добър изглед */
+table th:first-child, table td:first-child {
+    width: 80px;
 }
