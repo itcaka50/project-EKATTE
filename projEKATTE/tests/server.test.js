@@ -32,11 +32,11 @@ describe('EKATTE server logic', () => {
         mockClient.release.mockClear();
         mockPool.connect.mockClear();
 
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        console.error.mockRestore();
+        consoleErrorSpy.mockRestore();
     });
 
     describe('search()', () => {
@@ -55,7 +55,68 @@ describe('EKATTE server logic', () => {
             expect(result).toEqual(fakeRows);
             expect(mockClient.release).toHaveBeenCalled();
         });
+
+        test('should go into catch block', async () => {
+                mockClient.query.mockRejectedValue(new Error('Test error'));
+
+                const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+                const result = await search('Соф'); 
+
+                expect(consoleErrorSpy).toHaveBeenCalledWith(
+                    "Couldn't finish the query ",
+                    expect.any(Error)
+                );
+                expect(mockClient.release).toHaveBeenCalled();
+                expect(result).toBeUndefined();
+                consoleErrorSpy.mockRestore();
+        })
     });
+
+    describe('Counts and searchCount error handling', () => {
+    let consoleErrorSpy;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockClient.query.mockClear();
+        mockClient.release.mockClear();
+        mockPool.connect.mockClear();
+
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        consoleErrorSpy.mockRestore();
+    });
+
+    test('counts() should enter catch block on query error', async () => {
+            mockClient.query.mockRejectedValue(new Error('Test count error'));
+
+            const result = await counts('Соф');
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                "Couldn't query the count ",
+                expect.any(Error)
+            );
+            expect(mockClient.release).toHaveBeenCalled();
+            expect(result).toBeUndefined();
+        });
+
+        test('searchCount() should enter catch block on query error', async () => {
+
+            mockClient.query.mockRejectedValue(new Error('Test searchCount error'));
+
+            const result = await searchCount('Соф');
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                'Search count failed',
+                expect.any(Error)
+            );
+            expect(mockClient.release).toHaveBeenCalled();
+            expect(result).toBeUndefined();
+        });
+    });
+
 
     describe('HTTP Server', () => {
 
@@ -151,4 +212,6 @@ describe('EKATTE server logic', () => {
             server.emit('request', req, res);
         });
     });
+
+    
 });

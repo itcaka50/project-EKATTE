@@ -84,6 +84,74 @@ describe('Import functions', () => {
 
             await expect(fetchData('https://test.com')).rejects.toThrow('Network error');
         });
+
+        test('should correctly generate missing town halls using municipality name or TU name', async () => {
+            const urls = {
+                regions: 'https://test.com/regions',
+                municipalities: 'https://test.com/municipalities',
+                town_halls: 'https://test.com/town-halls',
+                territorial_units: 'https://test.com/territorial-units'
+            };
+
+            fs.readFile.mockResolvedValue(JSON.stringify(urls));
+
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => [{ oblast: '01', name: 'София' }]
+            });
+
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => [
+                    { obshtina: '01001', name: 'Община София' }  
+                ]
+            });
+
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => []
+            });
+
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => [
+                    {
+                        ekatte: '10000',
+                        name: 'Първо село',
+                        kmetstvo: '01001-00',
+                        kind: 'с'
+                    },
+                    {
+                        ekatte: '20000',
+                        name: 'Второ село',
+                        kmetstvo: '99999-00',
+                        kind : 'с'
+                    }
+                ]
+            });
+
+            mockClient.query.mockResolvedValue({});
+
+            await importFromFile('test.json');
+
+            const insertCalls = mockClient.query.mock.calls
+                .filter(call => call[0].includes('INSERT INTO town_halls'));
+
+            expect(insertCalls.length).toBe(1);
+
+            const insertedValues = insertCalls[0][1];
+
+            expect(insertedValues).toEqual([
+                '01001-00', 
+                'Община София',
+                '01001',
+
+                '99999-00',
+                'Второ село',
+                '99999'
+            ]);
+        });
+
     });
 
     describe('insertDataBatch()', () => {

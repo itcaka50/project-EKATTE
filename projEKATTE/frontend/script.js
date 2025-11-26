@@ -30,16 +30,36 @@ async function loadData() {
 
     updateStats(data.stats);
     updateTable(data.total, data.results);
+    updatePageStats(data.results)
     updatePagination(data.stats.territorial_units);
 }
 
 function updateStats(cnt) {
     document.getElementById("countTU").textContent = cnt.territorial_units;
-    document.getElementById("all").textContent = cnt.territorial_units;
     document.getElementById("countTH").textContent = cnt.town_halls;
     document.getElementById("countM").textContent = cnt.municipalities;
     document.getElementById("countR").textContent = cnt.regions;
 }
+
+function updatePageStats(rows) {
+    const rowsCount = rows.length;
+    const startIndex = (currentPage - 1) * LIMIT + 1;
+    const endIndex = startIndex + rowsCount - 1;
+
+    document.getElementById("countTUPage").textContent = `${startIndex} - ${endIndex}`;
+
+    let thCount = 0, mCount = 0, rCount = 0;
+    rows.forEach(r => {
+        if (r.town_hall) thCount++;
+        if (r.municipality) mCount++;
+        if (r.region) rCount++;
+    });
+
+    document.getElementById("countTHPage").textContent = thCount; 
+    document.getElementById("countMPage").textContent = mCount;
+    document.getElementById("countRPage").textContent = rCount;
+}
+
 
 function updateTable(total, rows) {
     document.getElementById("resultsCount").textContent = total;
@@ -71,29 +91,31 @@ function updatePagination(total) {
 
     if (pages <= 1) return;
 
-    const prevBtn = document.createElement("button");
-    prevBtn.textContent = "«";
-    prevBtn.disabled = currentPage === 1;
-    prevBtn.addEventListener("click", () => {
-        if (currentPage > 1) {
-            currentPage--;
+    const maxButtons = 5;
+    let startPage = Math.max(2, currentPage - Math.floor(maxButtons / 2));
+    let endPage = startPage + maxButtons - 1;
+
+    if (endPage >= pages) {
+        endPage = pages - 1;
+        startPage = Math.max(2, endPage - maxButtons + 1);
+    }
+
+    const firstBtn = document.createElement("button");
+    firstBtn.textContent = "1";
+    if (currentPage === 1) firstBtn.classList.add("active");
+    firstBtn.addEventListener("click", () => {
+        if (currentPage !== 1) {
+            currentPage = 1;
             loadData();
         }
     });
-    paginationContainer.appendChild(prevBtn);
-
-    const maxButtons = 5;
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(pages, startPage + maxButtons - 1);
-
-    if (endPage - startPage < maxButtons - 1) {
-        startPage = Math.max(1, endPage - maxButtons + 1);
-    }
+    paginationContainer.appendChild(firstBtn);
 
     for (let i = startPage; i <= endPage; i++) {
         const btn = document.createElement("button");
         btn.textContent = i;
-        if (i === currentPage) btn.classList.add("active");
+        if (i === currentPage) 
+            btn.classList.add("active");
 
         btn.addEventListener("click", () => {
             if (i !== currentPage) {
@@ -105,25 +127,18 @@ function updatePagination(total) {
         paginationContainer.appendChild(btn);
     }
 
-    const lastBtn = document.createElement("button");
-    lastBtn.textContent = pages;
-    lastBtn.disabled = currentPage === total;
-    lastBtn.addEventListener("click", () => {
-        if (currentPage !== pages) {
-            currentPage = pages;
-            loadData(); 
-        }
-    });
-    paginationContainer.appendChild(lastBtn);``
+    if (pages > 1) {
+        const lastBtn = document.createElement("button");
+        lastBtn.textContent = pages;
+        if (currentPage === pages) lastBtn.classList.add("active");
+        lastBtn.addEventListener("click", () => {
+            if (currentPage !== pages) {
+                currentPage = pages;
+                loadData();
+            }
+        });
+        paginationContainer.appendChild(lastBtn);
+    }
 
-    const nextBtn = document.createElement("button");
-    nextBtn.textContent = "»";
-    nextBtn.disabled = currentPage === pages;
-    nextBtn.addEventListener("click", () => {
-        if (currentPage < pages) {
-            currentPage++;
-            loadData();
-        }
-    });
-    paginationContainer.appendChild(nextBtn);
 }
+

@@ -124,7 +124,7 @@ async function importFromFile(path) {
         
         const missingTownHalls = territorialUnits
         .filter(tu => !townHalls.some(th => th.code === tu.town_hall_code))
-        .map(tu => {
+        .map(tu => { 
             const municipalityCode = tu.town_hall_code.slice(0, 5);
             const municipality = municipalities.find(m => m.code === municipalityCode);
 
@@ -133,7 +133,7 @@ async function importFromFile(path) {
                 name: municipality?.name || tu.name,
                 municipality_code: municipalityCode
             };
-        });
+        }); 
 
         if (missingTownHalls.length > 0) {
             townHalls = [...townHalls, ...missingTownHalls];

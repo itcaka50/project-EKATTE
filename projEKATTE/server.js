@@ -43,7 +43,7 @@ async function counts(q) {
         return results;
     }
     catch (error) {
-        console.error("Couldn't query the count ", error);
+        console.error("Couldn't query the count ", error); 
     }
     finally {
         client.release();
@@ -61,7 +61,7 @@ async function searchCount(q) {
         return Number(res.rows[0].count);
     }
     catch (err) {
-        console.error('Search count failed', err);
+        console.error('Search count failed', err); 
     }
     finally {
         client.release();

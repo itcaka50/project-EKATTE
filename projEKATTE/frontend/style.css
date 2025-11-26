@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background: #e6f4ea; /* светло зелен фон */
+    background: #e6f4ea; 
     margin: 0;
     padding: 30px;
 }
@@ -16,7 +16,7 @@ body {
 
 h1 {
     margin-bottom: 20px;
-    color: #2c6f4c; /* тъмно зелено за заглавието */
+    color: #2c6f4c; 
 }
 
 .search-box {
@@ -36,7 +36,7 @@ h1 {
     padding: 10px 20px;
     cursor: pointer;
     font-size: 14px;
-    background: #2c6f4c; /* приятно зелено */
+    background: #2c6f4c; 
     color: white;
     border: none;
     border-radius: 5px;
@@ -44,7 +44,7 @@ h1 {
 }
 
 .search-box button:hover {
-    background: #1e4b34; /* по-тъмно зелено при hover */
+    background: #1e4b34; 
 }
 
 .stats {
@@ -56,7 +56,7 @@ h1 {
 
 .stats div span {
     font-weight: bold;
-    color: #2c6f4c; /* зелен акцент за числата */
+    color: #2c6f4c; 
 }
 
 table {
@@ -66,7 +66,7 @@ table {
     table-layout: fixed;
 }
 
-table th, table td {
+table th, table td, table td {
     padding: 10px;
     border-bottom: 1px solid #cce5d0;
     text-align: left;
@@ -76,13 +76,13 @@ table th, table td {
 }
 
 table th {
-    background: #d9f0df; /* светло зелен header */
+    background: #d9f0df; 
     font-weight: bold;
     color: #2c6f4c;
 }
 
 table tbody tr:nth-child(even) {
-    background: #f0faf4; /* редуваща се зеленикава линия */
+    background: #f0faf4; 
 }
 
 table td {
