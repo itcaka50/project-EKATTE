@@ -32,23 +32,55 @@ async function search(q, limit = 25, offset = 0) {
 
 async function counts(q) {
     const client = await pool.connect();
-    
     try {
+        const like = `%${q}%`;
         const results = {};
 
-        for (const table of ['territorial_units', 'town_halls', 'municipalities', 'regions']) {
-            const r = await client.query(`SELECT count(*) FROM ${table} WHERE name ILIKE $1`, [`%${q}%`]);
-            results[table] = Number(r.rows[0].count);
-        }
+        const tu = await client.query(
+            `SELECT COUNT(*) AS cnt
+             FROM territorial_units
+             WHERE name ILIKE $1`,
+            [like]
+        );
+        results.territorial_units = Number(tu.rows[0].cnt);
+
+        const th = await client.query(
+            `SELECT COUNT(DISTINCT th.code) AS cnt
+             FROM town_halls th
+             JOIN territorial_units tu ON tu.town_hall_code = th.code
+             WHERE tu.name ILIKE $1`,
+            [like]
+        );
+        results.unique_town_halls = Number(th.rows[0].cnt);
+
+        const m = await client.query(
+            `SELECT COUNT(DISTINCT m.code) AS cnt
+             FROM municipalities m
+             JOIN town_halls th ON th.municipality_code = m.code
+             JOIN territorial_units tu ON tu.town_hall_code = th.code
+             WHERE tu.name ILIKE $1`,
+            [like]
+        );
+        results.unique_municipalities = Number(m.rows[0].cnt);
+
+        const r = await client.query(
+            `SELECT COUNT(DISTINCT r.code) AS cnt
+             FROM regions r
+             JOIN municipalities m ON m.region_code = r.code
+             JOIN town_halls th ON th.municipality_code = m.code
+             JOIN territorial_units tu ON tu.town_hall_code = th.code
+             WHERE tu.name ILIKE $1`,
+            [like]
+        );
+        results.unique_regions = Number(r.rows[0].cnt);
+
         return results;
-    }
-    catch (error) {
-        console.error("Couldn't query the count ", error); 
-    }
-    finally {
+    } finally {
         client.release();
     }
 }
+
+
 
 async function searchCount(q) {
     const client = await pool.connect();

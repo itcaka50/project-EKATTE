@@ -33,32 +33,57 @@ async function loadData() {
     updatePageStats(data.results)
     updatePagination(data.stats.territorial_units);
 }
-
+ 
 function updateStats(cnt) {
     document.getElementById("countTU").textContent = cnt.territorial_units;
-    document.getElementById("countTH").textContent = cnt.town_halls;
-    document.getElementById("countM").textContent = cnt.municipalities;
-    document.getElementById("countR").textContent = cnt.regions;
+    document.getElementById("countTH").textContent = cnt.unique_town_halls;
+    document.getElementById("countM").textContent = cnt.unique_municipalities;
+    document.getElementById("countR").textContent = cnt.unique_regions;
 }
+
 
 function updatePageStats(rows) {
-    const rowsCount = rows.length;
+    const rowsCount = rows?.length || 0;
+    if (rowsCount === 0) {
+        document.getElementById("countTUPage").textContent = "-";
+        document.getElementById("countTHPage").textContent = "0";
+        document.getElementById("countMPage").textContent = "0";
+        document.getElementById("countRPage").textContent = "0";
+        return;
+    }
+
     const startIndex = (currentPage - 1) * LIMIT + 1;
     const endIndex = startIndex + rowsCount - 1;
-
     document.getElementById("countTUPage").textContent = `${startIndex} - ${endIndex}`;
 
-    let thCount = 0, mCount = 0, rCount = 0;
+    const thSet = new Set();
+    const mSet = new Set();
+    const rSet = new Set();
+
     rows.forEach(r => {
-        if (r.town_hall) thCount++;
-        if (r.municipality) mCount++;
-        if (r.region) rCount++;
+        const th = r.town_hall;
+        const m = r.municipality;
+        const rg = r.region;
+
+        if (th != null) {
+            const v = String(th).trim();
+            if (v !== "") thSet.add(v.toLowerCase()); 
+        }
+        if (m != null) {
+            const v = String(m).trim();
+            if (v !== "") mSet.add(v.toLowerCase());
+        }
+        if (rg != null) {
+            const v = String(rg).trim();
+            if (v !== "") rSet.add(v.toLowerCase());
+        }
     });
 
-    document.getElementById("countTHPage").textContent = thCount; 
-    document.getElementById("countMPage").textContent = mCount;
-    document.getElementById("countRPage").textContent = rCount;
+    document.getElementById("countTHPage").textContent = thSet.size; 
+    document.getElementById("countMPage").textContent = mSet.size;
+    document.getElementById("countRPage").textContent = rSet.size;
 }
+
 
 
 function updateTable(total, rows) {
