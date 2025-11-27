@@ -8,5 +8,5 @@ avj
 
 
 TODO:
-1. test for that one line in server.js
-2. fix cosmetic issues in tread
+1. fix cosmetic issues
+2. fix counts bug
