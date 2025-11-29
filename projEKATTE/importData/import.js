@@ -122,8 +122,10 @@ async function importFromFile(path) {
         }));
         let territorialUnits = slicedTerritorialUnitsJson.filter(validateTerritorialUnit);
         
+
+        const townHallCodesSet = new Set(townHalls.map(th => th.code));
         const missingTownHalls = territorialUnits
-        .filter(tu => !townHalls.some(th => th.code === tu.town_hall_code))
+        .filter(tu => !townHallsCodesSet.has(tu.town_hall_code))
         .map(tu => { 
             const municipalityCode = tu.town_hall_code.slice(0, 5);
             const municipality = municipalities.find(m => m.code === municipalityCode);

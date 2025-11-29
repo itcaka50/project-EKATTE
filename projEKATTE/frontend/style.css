@@ -1,14 +1,16 @@
 body {
     font-family: Arial, sans-serif;
-    background: #e6f4ea; 
+    background: linear-gradient(to bottom, #f0faf4, #ffffff); 
     margin: 0;
+    background-size: cover;
+    backdrop-filter: blur(2px);
     padding: 30px;
 }
 
 .container {
     max-width: 900px;
     margin: auto;
-    background: white;
+    background: rgb(255, 255, 255, 255);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);

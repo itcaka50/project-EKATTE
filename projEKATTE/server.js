@@ -75,7 +75,11 @@ async function counts(q) {
         results.unique_regions = Number(r.rows[0].cnt);
 
         return results;
-    } finally {
+    }
+    catch(err) {
+        console.error("Couldn't query the count ", err);
+    }
+    finally {
         client.release();
     }
 }
@@ -90,6 +94,9 @@ async function searchCount(q) {
             `SELECT COUNT(*) FROM territorial_units WHERE name ILIKE $1`,
             [`%${q}%`]
         );
+        if (!res.rows || res.rows.length === 0) {
+            return 0;
+        }
         return Number(res.rows[0].count);
     }
     catch (err) {
@@ -106,19 +113,20 @@ const server = http.createServer (async (req, res) => {
 
     try {
         if (u.pathname === '/api/search') {
-        const q = u.query.q || '';
-        const limit = parseInt(u.query.limit) || 25;
-        const offset = parseInt(u.query.offset) || 0;
 
-        const results = await search(q, limit, offset);
+            const q = u.query.q || ''; 
+            const limit = parseInt(u.query.limit) || 25;
+            const offset = parseInt(u.query.offset) || 0;
 
-        const stats = await counts(q);
+            const results = await search(q, limit, offset);
 
-        const total = await searchCount(q);
+            const stats = await counts(q);
 
-        res.writeHead(200, {'Content-Type' : 'application/json'});
-        res.end(JSON.stringify({ results, stats, total }));
-        return;
+            const total = await searchCount(q);
+
+            res.writeHead(200, {'Content-Type' : 'application/json'});
+            res.end(JSON.stringify({ results, stats, total }));
+            return;
         }
 
         else if (u.pathname === '/' || u.pathname === '/index.html') {

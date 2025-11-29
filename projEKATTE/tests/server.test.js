@@ -213,5 +213,78 @@ describe('EKATTE server logic', () => {
         });
     });
 
-    
-});
+        //
+    // EXTRA TESTS (добави след края на файла)
+    //
+
+    describe('Additional search() tests', () => {
+        test('search() should pass correct limit & offset', async () => {
+            mockClient.query.mockResolvedValue({ rows: [] });
+
+            await search('Тест', 50, 100);
+
+            expect(mockClient.query).toHaveBeenCalledWith(
+                expect.stringContaining('LIMIT $2 OFFSET $3'),
+                ['%Тест%', 50, 100]
+            );
+        });
+
+        test('search() should return empty array if query returns empty rows', async () => {
+            mockClient.query.mockResolvedValue({ rows: [] });
+
+            const result = await search('Няма');
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('Additional counts() tests', () => {
+        test('counts() returns correct structured data', async () => {
+            mockClient.query
+                .mockResolvedValueOnce({ rows: [{ cnt: '10' }] })
+                .mockResolvedValueOnce({ rows: [{ cnt: '2' }] })
+                .mockResolvedValueOnce({ rows: [{ cnt: '1' }] })
+                .mockResolvedValueOnce({ rows: [{ cnt: '1' }] });
+
+            const result = await counts('Соф');
+
+            expect(result).toEqual({
+                territorial_units: 10,
+                unique_town_halls: 2,
+                unique_municipalities: 1,
+                unique_regions: 1
+            });
+        });
+    });
+
+    describe('Additional searchCount() tests', () => {
+        test('searchCount() returns a number on success', async () => {
+            mockClient.query.mockResolvedValue({ rows: [{ count: '15' }] });
+
+            const result = await searchCount('Соф');
+
+            expect(result).toBe(15);
+        });
+
+        test('searchCount() returns 0 if empty result', async () => {
+            mockClient.query.mockResolvedValue({ rows: [] });
+
+            const result = await searchCount('Соф');
+
+            expect(result).toBe(0);
+        });
+
+        test('should return 404 for /favicon.ico', (done) => {
+            const req = { url: '/favicon.ico' };
+            const res = {
+                writeHead: jest.fn(),
+                end: jest.fn(() => {
+                    expect(res.writeHead).toHaveBeenCalledWith(404);
+                    done();
+                })
+            };
+            server.emit('request', req, res);
+        });
+    });
+    });
+
